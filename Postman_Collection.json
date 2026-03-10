@@ -379,7 +379,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"logGroupName\": \"producto-log-group\"\n}"
+              "raw": "{\n    \"logGroupName\": \"api-gateway-log-group\"\n}"
             },
             "url": {
               "raw": "http://localhost:4566",
@@ -408,7 +408,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"logGroupName\": \"producto-log-group\"\n}"
+              "raw": "{\n    \"logGroupName\": \"ordenes-log-group\"\n}"
             },
             "url": {
               "raw": "http://localhost:4566",
@@ -437,7 +437,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"logGroupName\": \"producto-log-group\"\n}"
+              "raw": "{\n    \"logGroupName\": \"pagos-log-group\"\n}"
             },
             "url": {
               "raw": "http://localhost:4566",

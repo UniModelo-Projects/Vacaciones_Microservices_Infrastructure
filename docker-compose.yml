@@ -2,14 +2,14 @@ version: '3.8'
 
 services:
   eureka-server:
-    build: ./Eureka_Server
+    build: ./Exam_Microservices_Eureka_Server
     ports:
       - "8761:8761"
     networks:
       - microservices-net
 
   api-gateway:
-    build: ./API_Gateway
+    build: ./Exam_Microservices_API_Gateway
     ports:
       - "8080:8080"
     environment:
@@ -22,7 +22,7 @@ services:
       - microservices-net
 
   product-service:
-    build: ./Product_Microservice
+    build: ./Exam_Microservices_Products
     ports:
       - "8081:8081"
     environment:
@@ -38,7 +38,7 @@ services:
       - microservices-net
 
   order-service:
-    build: ./Order_Microservice
+    build: ./Exam_Microservices_Orders
     ports:
       - "8082:8082"
     environment:
@@ -54,7 +54,7 @@ services:
       - microservices-net
 
   payment-service:
-    build: ./Payment_MicroService/payment-service
+    build: ./Exam_Microservices_Payments
     ports:
       - "8083:8083"
     environment:

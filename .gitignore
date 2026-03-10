@@ -1,8 +1,8 @@
-API_Gateway/
-Eureka_Server/
-Order_Microservice/
-Payment_MicroService/
-Product_Microservice/
+Exam_Microservices_API_Gateway/
+Exam_Microservices_Eureka_Server/
+Exam_Microservices_Orders/
+Exam_Microservices_Payments/
+Exam_Microservices_Products/
 .mvn/
 target/
 *.jar
