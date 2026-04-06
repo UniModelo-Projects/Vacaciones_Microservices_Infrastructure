@@ -2,11 +2,45 @@
   "info": {
     "_postman_id": "0da7eb1f-4e15-4039-98e0-1a3cc0e5a7ab",
     "name": "Mejia Examen - Microservicios Completo",
-    "description": "Colección completa con todos los endpoints y variables de sistema.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "26214528"
+    "description": "Colección completa con todos los endpoints, variables de sistema y monitoreo.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
+    {
+      "name": "Monitoreo",
+      "item": [
+        {
+          "name": "Eureka Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{eurekaUrl}}",
+              "host": [
+                "{{eurekaUrl}}"
+              ]
+            },
+            "description": "Acceso al panel de control de Eureka Service Discovery"
+          },
+          "response": []
+        },
+        {
+          "name": "Kafka UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{kafkaUiUrl}}",
+              "host": [
+                "{{kafkaUiUrl}}"
+              ]
+            },
+            "description": "Interfaz web para monitorear tópicos y mensajes de Kafka"
+          },
+          "response": []
+        }
+      ]
+    },
     {
       "name": "Productos",
       "item": [
@@ -22,24 +56,6 @@
               ],
               "path": [
                 "productos"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Obtener Producto por ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/productos/{{Product_ID}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "productos",
-                "{{Product_ID}}"
               ]
             }
           },
@@ -72,9 +88,9 @@
           "response": []
         },
         {
-          "name": "Actualizar Producto",
+          "name": "Retry Producto (Internal)",
           "request": {
-            "method": "PUT",
+            "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
@@ -83,34 +99,16 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"nombre\": \"Laptop Pro\",\n    \"precio\": 1500.0,\n    \"stock\": 5,\n    \"descripcion\": \"Laptop Pro con mejores especificaciones\"\n}"
+              "raw": "{\n    \"nombre\": \"Laptop\",\n    \"precio\": 1200.0,\n    \"stock\": 10,\n    \"descripcion\": \"Laptop potente para desarrollo (Retry)\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/productos/{{Product_ID}}",
+              "raw": "{{baseUrl}}/productos/retry",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "productos",
-                "{{Product_ID}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Eliminar Producto",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/productos/{{Product_ID}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "productos",
-                "{{Product_ID}}"
+                "retry"
               ]
             }
           },
@@ -148,65 +146,27 @@
           "response": []
         },
         {
-          "name": "Obtener Orden por ID",
+          "name": "Retry Orden (Internal)",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/ordenes/{{Order_ID}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "ordenes",
-                "{{Order_ID}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Obtener Ordenes por Usuario",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/ordenes/usuario/{{User_ID}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "ordenes",
-                "usuario",
-                "{{User_ID}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Actualizar Estado de Orden",
-          "request": {
-            "method": "PUT",
+            "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
-                "value": "text/plain"
+                "value": "application/json"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "PAGADO"
+              "raw": "{\n    \"usuarioId\": \"{{User_ID}}\",\n    \"productoIds\": [\"{{Product_ID}}\"],\n    \"total\": 1200.0\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/ordenes/{{Order_ID}}/status",
+              "raw": "{{baseUrl}}/ordenes/retry",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "ordenes",
-                "{{Order_ID}}",
-                "status"
+                "retry"
               ]
             }
           },
@@ -245,56 +205,27 @@
           "response": []
         },
         {
-          "name": "Obtener Pago por ID",
+          "name": "Retry Pago (Internal)",
           "request": {
-            "method": "GET",
-            "header": [],
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"ordenId\": \"{{Order_ID}}\",\n    \"monto\": 1200.0\n}"
+            },
             "url": {
-              "raw": "{{baseUrl}}/pagos/{{Pago_ID}}",
+              "raw": "{{baseUrl}}/pagos/retry",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "pagos",
-                "{{Pago_ID}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Obtener Pago por Orden",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/pagos/orden/{{Order_ID}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "pagos",
-                "orden",
-                "{{Order_ID}}"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Reembolsar Pago",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/pagos/{{Pago_ID}}/reembolso",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "pagos",
-                "{{Pago_ID}}",
-                "reembolso"
+                "retry"
               ]
             }
           },
@@ -362,93 +293,6 @@
             }
           },
           "response": []
-        },
-        {
-          "name": "Ver Logs API Gateway",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "X-Amz-Target",
-                "value": "Logs_20140328.FilterLogEvents"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/x-amz-json-1.1"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"logGroupName\": \"api-gateway-log-group\"\n}"
-            },
-            "url": {
-              "raw": "http://localhost:4566",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "4566"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Ver Logs Ordenes",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "X-Amz-Target",
-                "value": "Logs_20140328.FilterLogEvents"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/x-amz-json-1.1"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"logGroupName\": \"ordenes-log-group\"\n}"
-            },
-            "url": {
-              "raw": "http://localhost:4566",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "4566"
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Ver Logs Pagos",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "X-Amz-Target",
-                "value": "Logs_20140328.FilterLogEvents"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/x-amz-json-1.1"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"logGroupName\": \"pagos-log-group\"\n}"
-            },
-            "url": {
-              "raw": "http://localhost:4566",
-              "protocol": "http",
-              "host": [
-                "localhost"
-              ],
-              "port": "4566"
-            }
-          },
-          "response": []
         }
       ]
     }
@@ -457,6 +301,16 @@
     {
       "key": "baseUrl",
       "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "eurekaUrl",
+      "value": "http://localhost:8761",
+      "type": "string"
+    },
+    {
+      "key": "kafkaUiUrl",
+      "value": "http://localhost:8086",
       "type": "string"
     },
     {
