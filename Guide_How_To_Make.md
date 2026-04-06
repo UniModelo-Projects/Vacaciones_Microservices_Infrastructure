@@ -102,7 +102,23 @@ Para que todo funcione al unísono, se crearon Dockerfiles optimizados.
 
 ---
 
-## 7. Paso 6: Pruebas con Postman (Ciclo de Vida)
+## 7. Paso 6: Resiliencia con Kafka y Chain of Responsibility (Broker Service)
+El sistema incluye un mecanismo de auto-recuperación para fallos en la creación de registros.
+
+### Flujo de Trabajo:
+1. **Detección**: Si un microservicio falla al guardar (simulado o real), envía el objeto envuelto a Kafka.
+2. **Orquestación (Broker)**: El `broker-service` captura el evento y ejecuta una cadena de responsabilidad:
+   - **Step A**: Reintento HTTP vía Feign.
+   - **Step B**: Envío de email de éxito.
+   - **Step C**: Actualización de control en PostgreSQL.
+   - **Step D**: Persistencia final en MongoDB.
+
+### Configuración de Reintentos:
+Se implementó un **Backoff Exponencial** en el Scheduler para evitar saturar los servicios en caso de caídas prolongadas.
+
+---
+
+## 8. Paso 7: Pruebas con Postman (Ciclo de Vida)
 Se entrega una colección con **variables de sistema** (`{{Product_ID}}`, etc.).
 
 ### Flujo de Prueba Recomendado:

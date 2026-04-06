@@ -1,51 +1,72 @@
-# Mejia Examen - Arquitectura de Microservicios
+# Mejia Examen - Microservices Infrastructure
 
-Este proyecto es una implementación de una arquitectura de microservicios robusta y escalable utilizando Spring Boot, diseñada para gestionar un flujo completo de productos, órdenes y pagos.
+This project contains the infrastructure configuration to orchestrate a suite of microservices with a robust **Retry Mechanism** using Kafka and a **Chain of Responsibility** (CoR) pattern.
 
-## Infraestructura y Tecnologías
-- **Java 21**: Lenguaje de programación principal.
-- **Spring Boot 3.2.5**: Framework para el desarrollo de los microservicios.
-- **Spring Cloud Netflix Eureka**: Registro y descubrimiento de servicios.
-- **Spring Cloud Gateway**: API Gateway para el enrutamiento centralizado.
-- **MongoDB**: Base de datos NoSQL para persistencia de datos (Productos, Órdenes, Pagos).
-- **LocalStack (AWS CloudWatch)**: Simulación de servicios de AWS para el almacenamiento y visualización de logs centralizados.
-- **Docker & Docker Compose**: Orquestación de contenedores para el despliegue local.
+## Architecture
+- **Eureka Server**: Service Registry.
+- **API Gateway**: Entry point for all services.
+- **Product Service**: Product management (MongoDB).
+- **Order Service**: Order processing (MongoDB).
+- **Payment Service**: Payment processing (MongoDB).
+- **Broker Service**: Core retry engine (PostgreSQL + Kafka).
+- **Kafka**: Message broker for failed job notifications.
+- **PostgreSQL**: Stores persistent retry jobs.
+- **MongoDB**: Final tracking and audit logs.
+- **KafkaUI**: Web interface for Kafka monitoring.
 
-## Ecosistema de Repositorios
-Este proyecto está dividido en varios repositorios para mantener la independencia de cada componente:
+## Port Map
+| Service | Port | Description |
+|---------|------|-------------|
+| API Gateway | 8080 | Entry point |
+| Eureka Server | 8761 | Registry Dashboard |
+| KafkaUI | 8086 | Kafka Monitoring |
+| Product Service | 8081 | Backend |
+| Order Service | 8082 | Backend |
+| Payment Service | 8083 | Backend |
+| Broker Service | 8084 | Retry Engine |
+| MongoDB | 27017 | Database |
+| PostgreSQL | 5432 | Database |
 
-- **[Infraestructura y Guías](https://github.com/UniModelo-Projects/Exam_Microservices_Infrastructure)** (Este repositorio)
-- **[Eureka Server](https://github.com/UniModelo-Projects/Exam_Microservices_Eureka_Server)**
-- **[API Gateway](https://github.com/UniModelo-Projects/Exam_Microservices_API_Gateway)**
-- **[Product Microservice](https://github.com/UniModelo-Projects/Exam_Microservices_Products)**
-- **[Order Microservice](https://github.com/UniModelo-Projects/Exam_Microservices_Orders)**
-- **[Payment Microservice](https://github.com/UniModelo-Projects/Exam_Microservices_Payments)**
+---
 
-## Puertos de los Servicios
-| Servicio | Puerto | Descripción |
-| :--- | :--- | :--- |
-| **Eureka Server** | 8761 | Dashboard de descubrimiento de servicios. |
-| **API Gateway** | 8080 | Punto de entrada único para todos los microservicios. |
-| **Product Service** | 8081 | Gestión del catálogo de productos. |
-| **Order Service** | 8082 | Gestión de órdenes de compra. |
-| **Payment Service** | 8083 | Procesamiento de pagos y reembolsos. |
-| **MongoDB** | 27017 | Base de datos principal. |
-| **LocalStack** | 4566 | CloudWatch Logs (Mock). |
+## How to Test the Error Flow (Retry Mechanism)
 
-## Cómo Iniciar el Proyecto
-1. Asegúrate de tener instalado **Docker Desktop**.
-2. Compila los microservicios (opcional, docker-compose lo hace):
-   ```powershell
-   ./mvnw clean package -DskipTests
-   ```
-3. Levanta la infraestructura completa:
-   ```powershell
-   docker-compose up -d --build
-   ```
-4. Importa el archivo `Postman_Collection.json` en Postman para probar los endpoints.
+The system is designed to handle failures gracefully. The **Order Service** and **Payment Service** have a 30% chance of failure during creation.
 
-## Logs Centralizados
-Cada microservicio envía sus logs a **CloudWatch (LocalStack)**. Puedes consultarlos vía Postman o mediante la CLI de AWS apuntando al endpoint de LocalStack:
+### Step 1: Start the environment
 ```powershell
-aws --endpoint-url=http://localhost:4566 logs describe-log-groups
+docker-compose up -d --build
 ```
+
+### Step 2: Trigger a failure
+Send multiple order creation requests via the API Gateway. Some will fail with `500 Internal Server Error`.
+```bash
+curl -X POST http://localhost:8080/ordenes \
+-H "Content-Type: application/json" \
+-d '{"usuarioId": "user123", "productoIds": ["prod1"], "total": 100.0}'
+```
+
+### Step 3: Monitor Kafka
+Open **KafkaUI** at [http://localhost:8086](http://localhost:8086).
+Look for messages in the `order_retry_jobs` topic. This is the first indicator that the failure was caught and sent for retry.
+
+### Step 4: Verify Persistence
+The **Broker Service** will receive the Kafka message and save it to PostgreSQL. You can check the `retry_jobs` table in the `broker_db`.
+
+### Step 5: Wait for the Scheduler
+The Broker has a scheduler that runs every **10 seconds**. Once triggered:
+1. It will pick up the `PENDING` job.
+2. **Step A**: It will call the `/retry` endpoint of the original service.
+3. **Step B**: It will attempt to send a confirmation email.
+4. **Step C**: It will log the progress.
+5. **Step D**: It will save a final tracking record in MongoDB.
+
+### Step 6: Verify Final State
+Check the `broker_final_db` in MongoDB to see the audit trail of the completed retry.
+```bash
+docker exec -it <mongodb-container-id> mongosh
+use broker_final_db
+db.order_final.find().pretty()
+```
+
+The job in PostgreSQL will now have a status of `SUCCESS`.
