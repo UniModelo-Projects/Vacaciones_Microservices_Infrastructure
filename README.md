@@ -14,6 +14,14 @@ This project contains the infrastructure configuration to orchestrate a suite of
 - **MongoDB**: Final tracking and audit logs.
 - **KafkaUI**: Web interface for Kafka monitoring.
 
+## Microservices Repositories
+- [API Gateway](https://github.com/UniModelo-Projects/Vacaciones_Microservices_API_Gateway)
+- [Eureka Server](https://github.com/UniModelo-Projects/Vacaciones_Microservices_Eureka_Server)
+- [Broker Service](https://github.com/UniModelo-Projects/Vacaciones_Microservices_Broker)
+- [Product Service](https://github.com/UniModelo-Projects/Vacaciones_Microservices_Products)
+- [Order Service](https://github.com/UniModelo-Projects/Vacaciones_Microservices_Orders)
+- [Payment Service](https://github.com/UniModelo-Projects/Vacaciones_Microservices_Payments)
+
 ## Port Map
 | Service | Port | Description |
 |---------|------|-------------|
