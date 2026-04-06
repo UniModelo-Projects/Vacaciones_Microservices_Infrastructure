@@ -88,8 +88,8 @@ services:
       - DB_PASS=password
       - MONGO_URI=mongodb://mongodb:27017/broker_final_db
       - KAFKA_BROKERS=kafka:29092
-      - EMAIL_USER=dinocodeadvisor@gmail.com
-      - EMAIL_PASS=vmbrfnsykevajfrt
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
     depends_on:
       - eureka-server
       - postgres
