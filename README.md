@@ -39,7 +39,12 @@ This project contains the infrastructure configuration to orchestrate a suite of
 
 ## How to Test the Error Flow (Retry Mechanism)
 
-The system is designed to handle failures gracefully. The **Order Service** and **Payment Service** have a 30% chance of failure during creation.
+The system is designed to handle failures gracefully across all core services (**Products, Orders, and Payments**).
+
+### Failure Simulation:
+- **Order Service**: 30% chance of failure on creation.
+- **Payment Service**: 40% chance of failure on processing.
+- **Product Service**: 20% chance of failure on creation.
 
 ### Step 1: Start the environment
 ```powershell
@@ -47,34 +52,47 @@ docker-compose up -d --build
 ```
 
 ### Step 2: Trigger a failure
-Send multiple order creation requests via the API Gateway. Some will fail with `500 Internal Server Error`.
+You can trigger failures for any of the services using `curl` or Postman.
+
+#### Example for Orders:
 ```bash
 curl -X POST http://localhost:8080/ordenes \
 -H "Content-Type: application/json" \
 -d '{"usuarioId": "user123", "productoIds": ["prod1"], "total": 100.0}'
 ```
 
+#### Example for Payments:
+```bash
+curl -X POST http://localhost:8080/pagos/procesar \
+-H "Content-Type: application/json" \
+-d '{"ordenId": "order123", "monto": 100.0}'
+```
+
+#### Example for Products:
+```bash
+curl -X POST http://localhost:8080/productos \
+-H "Content-Type: application/json" \
+-d '{"nombre": "Keyboard", "precio": 50.0, "stock": 20}'
+```
+
 ### Step 3: Monitor Kafka
 Open **KafkaUI** at [http://localhost:8086](http://localhost:8086).
-Look for messages in the `order_retry_jobs` topic. This is the first indicator that the failure was caught and sent for retry.
+Check the corresponding topics: `order_retry_jobs`, `payments_retry_jobs`, or `product_retry_jobs`.
 
 ### Step 4: Verify Persistence
-The **Broker Service** will receive the Kafka message and save it to PostgreSQL. You can check the `retry_jobs` table in the `broker_db`.
+The **Broker Service** saves jobs to PostgreSQL. Check the `retry_jobs` table in `broker_db`.
 
-### Step 5: Wait for the Scheduler
-The Broker has a scheduler that runs every **10 seconds**. Once triggered:
-1. It will pick up the `PENDING` job.
-2. **Step A**: It will call the `/retry` endpoint of the original service.
-3. **Step B**: It will attempt to send a confirmation email.
-4. **Step C**: It will log the progress.
-5. **Step D**: It will save a final tracking record in MongoDB.
+### Step 5: Wait for the Scheduler (10 seconds)
+The Broker executes the **Chain of Responsibility**:
+1. **Step A**: Calls the `/retry` endpoint of the failed service.
+2. **Step B**: Sends a confirmation email.
+3. **Step C**: Logs progress.
+4. **Step D**: Saves final tracking to MongoDB.
 
 ### Step 6: Verify Final State
-Check the `broker_final_db` in MongoDB to see the audit trail of the completed retry.
+Check `broker_final_db` in MongoDB for the corresponding collections: `order_final`, `payment_final`, or `product_final`.
 ```bash
 docker exec -it <mongodb-container-id> mongosh
 use broker_final_db
-db.order_final.find().pretty()
+db.order_final.find().pretty()   # Or payment_final / product_final
 ```
-
-The job in PostgreSQL will now have a status of `SUCCESS`.
