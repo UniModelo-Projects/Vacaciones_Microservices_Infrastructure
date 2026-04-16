@@ -8,3 +8,5 @@ target/
 *.jar
 .vscode/
 .idea/
+
+.env
